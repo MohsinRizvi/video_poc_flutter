@@ -2,7 +2,6 @@ import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:video_poc/api_service.dart';
 import 'package:video_poc/story_model.dart';
-import 'package:http/http.dart' as http;
 
 class ControllerProvider extends ChangeNotifier {
   var currentIndexPlaying = 0;
@@ -100,20 +99,6 @@ class ControllerProvider extends ChangeNotifier {
   disposeCurrentControllerAndCreateNew(String url) {
     c1.dispose(forceDispose: true);
     c1 = createController(url);
-  }
-
-  Future<VideoSize> getVideoSize(String url, BuildContext context) async {
-    try {
-      final response = await http.head(Uri.parse(url));
-      final contentLength = response.headers['content-length'];
-      final sizeInBytes = contentLength != null ? int.parse(contentLength) : 0;
-      final sizeInMB = sizeInBytes / (1024 * 1024);
-// final videoSize = await _getVideoSize(story.url);
-      return VideoSize(sizeInBytes, sizeInMB);
-    } catch (error) {
-      print('Error fetching video size: $error');
-      return VideoSize(0, 0);
-    }
   }
 }
 

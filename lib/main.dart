@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_poc/api_service.dart';
 import 'package:video_poc/controller_provider.dart';
+import 'package:video_poc/full_view.dart';
 import 'package:video_poc/story_model.dart';
 import 'package:video_poc/video_list_page.dart';
 import 'package:visibility_detector/visibility_detector.dart';
@@ -295,21 +296,17 @@ class _VideoWidgetState extends State<VideoWidget> {
   }
 
   void onTap() async {
-    // DateTime loadStartTime = DateTime.now();
-    // Duration loadTime = DateTime.now().difference(loadStartTime);
-    // final size = await Provider.of<ControllerProvider>(context, listen: false)
-    //     .getVideoSize(widget.videoUrls, context);
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   SnackBar(
-    //     content: Text(
-    //       'Load Time: ${loadTime.inMilliseconds} ms - Size: ${size.bytes} bytes (${size.megabytes.floor()} MB)',
-    //     ),
-    //     duration: Duration(seconds: 3),
-    //   ),
-    // );
+    Provider.of<ControllerProvider>(context, listen: false)
+        .disposeCurrentControllerAndCreateNew(widget.videoUrls);
 
-    // Provider.of<ControllerProvider>(context, listen: false)
-    //     .disposeCurrentControllerAndCreateNew(widget.videoUrls);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FullScreenView(
+          controller: widget.controller,
+        ),
+      ),
+    );
   }
 
   @override
