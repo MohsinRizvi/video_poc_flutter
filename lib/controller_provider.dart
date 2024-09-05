@@ -10,6 +10,7 @@ class ControllerProvider extends ChangeNotifier {
   List<Story> stories = [];
   final StoryService storyService = StoryService();
   var loading = true;
+  Duration? loadDateTime = Duration.zero;
 
   void fetchStories() async {
     var temp = await storyService.fetchStories();
@@ -25,9 +26,16 @@ class ControllerProvider extends ChangeNotifier {
   void setupController() {
     print('PLAYING ${currentIndexPlaying} VIDEO');
 
+    final currentTime = DateTime.now();
+
     c1 = createController(stories[currentIndexPlaying].url);
 
     c1.addEventsListener((event) async {
+      print('Event Type: ${event.betterPlayerEventType}');
+      if (event.betterPlayerEventType == BetterPlayerEventType.play) {
+        loadDateTime = DateTime.now().difference(currentTime);
+        print('LOAD TIME $loadDateTime');
+      }
       final position = await c1.videoPlayerController!.position;
       if (position != null && position.inSeconds >= 3) {
         // Pause the video after 3 seconds

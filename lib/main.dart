@@ -244,6 +244,7 @@ class _ReelsScreenState extends State<ReelsScreen> {
                         isPlaying: provider.stories[index].isPlayed,
                         index: index,
                         currentIndexPlaying: provider.currentIndexPlaying,
+                        duration: provider.loadDateTime!,
                       );
                     },
                     gridDelegate:
@@ -270,6 +271,7 @@ class VideoWidget extends StatefulWidget {
     required this.isPlaying,
     required this.index,
     required this.currentIndexPlaying,
+    required this.duration,
   });
 
   final String videoUrls;
@@ -278,6 +280,7 @@ class VideoWidget extends StatefulWidget {
   final String thumbnail;
   final bool isPlaying;
   final int index, currentIndexPlaying;
+  final Duration duration;
 
   @override
   State<VideoWidget> createState() => _VideoWidgetState();
@@ -292,18 +295,18 @@ class _VideoWidgetState extends State<VideoWidget> {
   }
 
   void onTap() async {
-    DateTime loadStartTime = DateTime.now();
-    Duration loadTime = DateTime.now().difference(loadStartTime);
-    final size = await Provider.of<ControllerProvider>(context, listen: false)
-        .getVideoSize(widget.videoUrls, context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'Load Time: ${loadTime.inMilliseconds} ms - Size: ${size.bytes} bytes (${size.megabytes.floor()} MB)',
-        ),
-        duration: Duration(seconds: 3),
-      ),
-    );
+    // DateTime loadStartTime = DateTime.now();
+    // Duration loadTime = DateTime.now().difference(loadStartTime);
+    // final size = await Provider.of<ControllerProvider>(context, listen: false)
+    //     .getVideoSize(widget.videoUrls, context);
+    // ScaffoldMessenger.of(context).showSnackBar(
+    //   SnackBar(
+    //     content: Text(
+    //       'Load Time: ${loadTime.inMilliseconds} ms - Size: ${size.bytes} bytes (${size.megabytes.floor()} MB)',
+    //     ),
+    //     duration: Duration(seconds: 3),
+    //   ),
+    // );
 
     // Provider.of<ControllerProvider>(context, listen: false)
     //     .disposeCurrentControllerAndCreateNew(widget.videoUrls);
@@ -330,7 +333,15 @@ class _VideoWidgetState extends State<VideoWidget> {
                   widget.thumbnail,
                   fit: BoxFit.cover,
                 ))
-            : BetterPlayer(controller: widget.controller),
+            : Stack(
+                children: [
+                  BetterPlayer(controller: widget.controller),
+                  Text(
+                    widget.duration.inMilliseconds.toString(),
+                    style: const TextStyle(fontSize: 30, color: Colors.red),
+                  ),
+                ],
+              ),
       ),
     );
   }
