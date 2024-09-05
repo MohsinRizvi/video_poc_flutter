@@ -7,6 +7,7 @@ class Story {
   final String videoFormat;
   final String thumbnail;
   final MediaType media;
+  bool isPlayed;
 
   Story({
     required this.id,
@@ -15,6 +16,7 @@ class Story {
     required this.videoFormat,
     required this.thumbnail,
     required this.media,
+    required this.isPlayed,
   });
 
   // Factory constructor to create a Story from JSON data
@@ -30,6 +32,7 @@ class Story {
       videoFormat: json['video-format'] ?? '',
       thumbnail: json['thumbnail'],
       media: mediaType,
+      isPlayed: false,
     );
   }
 }
