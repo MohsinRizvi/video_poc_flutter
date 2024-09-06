@@ -4,18 +4,22 @@ import 'package:provider/provider.dart';
 import 'package:video_poc/controller_provider.dart';
 
 class FullScreenView extends StatelessWidget {
-  final BetterPlayerController controller;
-  const FullScreenView({super.key, required this.controller});
+  const FullScreenView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: AspectRatio(
-        aspectRatio: controller.getAspectRatio() ?? 9 / 16,
-        child: Consumer<ControllerProvider>(builder: (context, provider, _) {
-          return BetterPlayer(controller: provider.c1);
-        }),
-      ),
+      body: Consumer<ControllerProvider>(builder: (context, provider, _) {
+        return PopScope(
+          onPopInvokedWithResult: (didPop, result) {
+            provider.resumeC1();
+          },
+          child: AspectRatio(
+            aspectRatio: 9 / 16,
+            child: BetterPlayer(controller: provider.c2),
+          ),
+        );
+      }),
     );
   }
 }

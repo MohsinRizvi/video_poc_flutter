@@ -218,6 +218,18 @@ class _ReelsScreenState extends State<ReelsScreen> {
     );
   }
 
+  void onTap(url) async {
+    Provider.of<ControllerProvider>(context, listen: false)
+        .disposeCurrentControllerAndCreateNew(url);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => FullScreenView(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -291,7 +303,7 @@ class _VideoWidgetState extends State<VideoWidget> {
   @override
   void dispose() {
     print("DISOPOSE CALLED FROM VIDEO WIDGET");
-    widget.controller.dispose();
+
     super.dispose();
   }
 
@@ -302,9 +314,7 @@ class _VideoWidgetState extends State<VideoWidget> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => FullScreenView(
-          controller: widget.controller,
-        ),
+        builder: (context) => FullScreenView(),
       ),
     );
   }
@@ -332,7 +342,9 @@ class _VideoWidgetState extends State<VideoWidget> {
                 ))
             : Stack(
                 children: [
-                  BetterPlayer(controller: widget.controller),
+                  BetterPlayerMultipleGestureDetector(
+                      onTap: null,
+                      child: BetterPlayer(controller: widget.controller)),
                   Text(
                     widget.duration.inMilliseconds.toString(),
                     style: const TextStyle(fontSize: 30, color: Colors.red),

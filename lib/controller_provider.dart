@@ -6,6 +6,7 @@ import 'package:video_poc/story_model.dart';
 class ControllerProvider extends ChangeNotifier {
   var currentIndexPlaying = 0;
   late BetterPlayerController c1;
+  late BetterPlayerController c2;
   List<Story> stories = [];
   final StoryService storyService = StoryService();
   var loading = true;
@@ -13,8 +14,18 @@ class ControllerProvider extends ChangeNotifier {
 
   void fetchStories() async {
     var temp = await storyService.fetchStories();
-    for (int i = 0; i < 11; i++) {
-      if (temp[i].videoFormat == 'avi') continue;
+    for (int i = 0; i < temp.length; i++) {
+      if (temp[i].videoFormat != 'webm'
+          // temp[i].videoFormat == 'webm' ||
+          // temp[i].videoFormat == 'm3u8' ||
+          //   temp[i].videoFormat == 'webm' ||
+          //   temp[i].videoFormat == 'avi' ||
+          //   temp[i].videoFormat == 'mp4' ||
+          //   temp[i].videoFormat == 'webm v9' ||
+          //   temp[i].videoFormat == '3gp' ||
+          //   temp[i].videoFormat == 'asf'
+          // temp[i].videoFormat == 'mov'
+          ) continue;
       stories.add(temp[i]);
     }
     loading = false;
@@ -84,7 +95,7 @@ class ControllerProvider extends ChangeNotifier {
     return BetterPlayerController(
       const BetterPlayerConfiguration(
         aspectRatio: 2 / 3,
-        fit: BoxFit.fitHeight,
+        fit: BoxFit.cover,
         autoDispose: false,
         autoPlay: true,
         controlsConfiguration: BetterPlayerControlsConfiguration(
@@ -97,8 +108,13 @@ class ControllerProvider extends ChangeNotifier {
   }
 
   disposeCurrentControllerAndCreateNew(String url) {
-    c1.dispose(forceDispose: true);
-    c1 = createController(url);
+    c2 = createController(url);
+    c1.pause();
+  }
+
+  resumeC1() {
+    c2.dispose(forceDispose: true);
+    c1.play();
   }
 }
 
