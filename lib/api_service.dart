@@ -1,5 +1,3 @@
-import 'package:dio/dio.dart';
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:video_poc/story_model.dart';

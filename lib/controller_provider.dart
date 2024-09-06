@@ -109,6 +109,9 @@ class ControllerProvider extends ChangeNotifier {
 
   disposeCurrentControllerAndCreateNew(String url) {
     c2 = createController(url);
+    c2.addEventsListener((event) {
+      if (c2.isVideoInitialized()!) notifyListeners();
+    });
     c1.pause();
   }
 
