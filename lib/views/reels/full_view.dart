@@ -1,7 +1,7 @@
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:video_poc/controller_provider.dart';
+import 'package:video_poc/controller/controller_provider.dart';
 
 class FullScreenView extends StatelessWidget {
   const FullScreenView({super.key});
