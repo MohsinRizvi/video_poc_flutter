@@ -37,6 +37,8 @@ dependencies:
   better_player: ^0.0.84
   build_runner:
   json_serializable:
+  cached_network_image:
+  video_player:
   dio:
   json_annotation:
   visibility_detector: ^0.4.0+2

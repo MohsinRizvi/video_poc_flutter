@@ -1,7 +1,7 @@
 import 'package:better_player/better_player.dart';
 import 'package:flutter/material.dart';
-import 'package:video_poc/api_service.dart';
-import 'package:video_poc/story_model.dart';
+import 'package:video_poc/models/story_model.dart';
+import 'package:video_poc/service/network.dart';
 
 class ControllerProvider extends ChangeNotifier {
   var currentIndexPlaying = 0;
@@ -11,21 +11,24 @@ class ControllerProvider extends ChangeNotifier {
   final StoryService storyService = StoryService();
   var loading = true;
   Duration? loadDateTime = Duration.zero;
-
+  void setCurrentStory(int index) {
+    currentIndexPlaying = index;
+    notifyListeners();
+  }
   void fetchStories() async {
     var temp = await storyService.fetchStories();
     for (int i = 0; i < temp.length; i++) {
-      if (temp[i].videoFormat != 'webm'
-          // temp[i].videoFormat == 'webm' ||
-          // temp[i].videoFormat == 'm3u8' ||
-          //   temp[i].videoFormat == 'webm' ||
-          //   temp[i].videoFormat == 'avi' ||
-          //   temp[i].videoFormat == 'mp4' ||
-          //   temp[i].videoFormat == 'webm v9' ||
-          //   temp[i].videoFormat == '3gp' ||
-          //   temp[i].videoFormat == 'asf'
-          // temp[i].videoFormat == 'mov'
-          ) continue;
+      // if (temp[i].videoFormat != 'webm'
+      //     // temp[i].videoFormat == 'webm' ||
+      //     // temp[i].videoFormat == 'm3u8' ||
+      //     //   temp[i].videoFormat == 'webm' ||
+      //     //   temp[i].videoFormat == 'avi' ||
+      //     //   temp[i].videoFormat == 'mp4' ||
+      //     //   temp[i].videoFormat == 'webm v9' ||
+      //     //   temp[i].videoFormat == '3gp' ||
+      //     //   temp[i].videoFormat == 'asf'
+      //     // temp[i].videoFormat == 'mov'
+      //     ) continue;
       stories.add(temp[i]);
     }
     loading = false;
@@ -109,6 +112,9 @@ class ControllerProvider extends ChangeNotifier {
 
   disposeCurrentControllerAndCreateNew(String url) {
     c2 = createController(url);
+    c2.addEventsListener((event) {
+      if (c2.isVideoInitialized()!) notifyListeners();
+    });
     c1.pause();
   }
 
