@@ -1,76 +1,52 @@
+import 'dart:io';
+
 import 'package:better_player/better_player.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:video_poc/models/story_model.dart';
 import 'package:video_poc/service/network.dart';
 
 class ControllerProvider extends ChangeNotifier {
   var currentIndexPlaying = 0;
+  var currentReelIndex = 0;
+  var loading = true;
   late BetterPlayerController c1;
   late BetterPlayerController c2;
-  List<Story> stories = [];
+  var pageController = PageController();
   final StoryService storyService = StoryService();
-  var loading = true;
-  Duration? loadDateTime = Duration.zero;
-  void setCurrentStory(int index) {
-    currentIndexPlaying = index;
-    notifyListeners();
-  }
+  List<Story> stories = [];
+
   void fetchStories() async {
-    var temp = await storyService.fetchStories();
-    for (int i = 0; i < temp.length; i++) {
-      // if (temp[i].videoFormat != 'webm'
-      //     // temp[i].videoFormat == 'webm' ||
-      //     // temp[i].videoFormat == 'm3u8' ||
-      //     //   temp[i].videoFormat == 'webm' ||
-      //     //   temp[i].videoFormat == 'avi' ||
-      //     //   temp[i].videoFormat == 'mp4' ||
-      //     //   temp[i].videoFormat == 'webm v9' ||
-      //     //   temp[i].videoFormat == '3gp' ||
-      //     //   temp[i].videoFormat == 'asf'
-      //     // temp[i].videoFormat == 'mov'
-      //     ) continue;
-      stories.add(temp[i]);
+    stories = await storyService.fetchStories();
+
+    if (Platform.isIOS) {
+      stories.removeWhere((story) =>
+          story.videoFormat == 'webm' || story.videoFormat == 'webm-vp9');
     }
+    await Future.delayed(const Duration(seconds: 2));
     loading = false;
+
     setupController();
     notifyListeners();
   }
 
   void setupController() {
-    print('PLAYING ${currentIndexPlaying} VIDEO');
-
-    final currentTime = DateTime.now();
+    debugPrint('PLAYING $currentIndexPlaying VIDEO');
 
     c1 = createController(stories[currentIndexPlaying].url);
-
+    c1.setVolume(0);
     c1.addEventsListener((event) async {
-      print('Event Type: ${event.betterPlayerEventType}');
-      if (event.betterPlayerEventType == BetterPlayerEventType.play) {
-        loadDateTime = DateTime.now().difference(currentTime);
-        print('LOAD TIME $loadDateTime');
-      }
       final position = await c1.videoPlayerController!.position;
       if (position != null && position.inSeconds >= 3) {
-        // Pause the video after 3 seconds
         c1.pause();
         stories[currentIndexPlaying].isPlayed = true;
-        notifyListeners();
-
-        // Move to the next video
         currentIndexPlaying++;
-        if (currentIndexPlaying >= stories.length) {
-          currentIndexPlaying = 0; // Loop back to the start
-        }
-
-        // // Reset all videos to their thumbnails except the current one
-        // for (int i = 0; i < stories.length; i++) {
-        //   if (i == currentIndexPlaying) continue;
-        //   stories[i].isPlayed = false;
-        // }
 
         notifyListeners();
 
-        // Dispose the current controller and setup the new video
+        if (currentIndexPlaying >= stories.length) {
+          currentIndexPlaying = 0;
+        }
 
         c1.dispose(forceDispose: true);
         setupController();
@@ -96,12 +72,18 @@ class ControllerProvider extends ChangeNotifier {
       ),
     );
     return BetterPlayerController(
-      const BetterPlayerConfiguration(
-        aspectRatio: 2 / 3,
+      BetterPlayerConfiguration(
+        placeholder: CachedNetworkImage(
+          fit: BoxFit.cover,
+          imageUrl: stories[currentIndexPlaying].thumbnail,
+          placeholder: (context, url) => const SizedBox(),
+          errorWidget: (context, url, error) => const Icon(Icons.error),
+        ),
+        aspectRatio: 2 / 3.8,
         fit: BoxFit.cover,
         autoDispose: false,
         autoPlay: true,
-        controlsConfiguration: BetterPlayerControlsConfiguration(
+        controlsConfiguration: const BetterPlayerControlsConfiguration(
           controlBarColor: Colors.black26,
           showControls: false,
         ),
@@ -110,12 +92,74 @@ class ControllerProvider extends ChangeNotifier {
     );
   }
 
-  disposeCurrentControllerAndCreateNew(String url) {
-    c2 = createController(url);
+  createReelsController(String url) {
+    BetterPlayerDataSource betterPlayerDataSource = BetterPlayerDataSource(
+      BetterPlayerDataSourceType.network,
+      url,
+      bufferingConfiguration: const BetterPlayerBufferingConfiguration(
+        minBufferMs: 3000,
+        maxBufferMs: 10000,
+        bufferForPlaybackMs: 1000,
+        bufferForPlaybackAfterRebufferMs: 2000,
+      ),
+      cacheConfiguration: const BetterPlayerCacheConfiguration(
+        useCache: true,
+        preCacheSize: 3 * 1024 * 1024,
+        maxCacheSize: 100 * 1024 * 1024,
+        maxCacheFileSize: 10 * 1024 * 1024,
+      ),
+    );
+    return BetterPlayerController(
+      BetterPlayerConfiguration(
+        placeholder: CachedNetworkImage(
+          fit: BoxFit.cover,
+          imageUrl: stories[currentIndexPlaying].thumbnail,
+          placeholder: (context, url) => const SizedBox(),
+          errorWidget: (context, url, error) => const Icon(Icons.error),
+        ),
+        aspectRatio: 2 / 3.8,
+        fit: BoxFit.cover,
+        autoDispose: false,
+        autoPlay: true,
+        controlsConfiguration: const BetterPlayerControlsConfiguration(
+          controlBarColor: Colors.black26,
+          showControls: true,
+          enableFullscreen: false,
+          enableProgressBar: false,
+        ),
+      ),
+      betterPlayerDataSource: betterPlayerDataSource,
+    );
+  }
+
+  disposeCurrentControllerAndCreateNew(String url, {int reelIndex = 0}) {
+    currentReelIndex = reelIndex;
+    pageController = PageController(initialPage: reelIndex);
+    c2 = createReelsController(url);
+
     c2.addEventsListener((event) {
       if (c2.isVideoInitialized()!) notifyListeners();
+      if (event.betterPlayerEventType == BetterPlayerEventType.finished) {
+        currentReelIndex++;
+        pageController.jumpToPage(currentReelIndex);
+      }
     });
     c1.pause();
+  }
+
+  onPageChange(int index, String url) {
+    currentReelIndex = index;
+
+    c2.dispose(forceDispose: true);
+    c2 = createReelsController(url);
+    c2.addEventsListener((event) {
+      if (c2.isVideoInitialized()!) notifyListeners();
+      if (event.betterPlayerEventType == BetterPlayerEventType.finished) {
+        currentReelIndex++;
+        pageController.jumpToPage(currentReelIndex);
+      }
+    });
+    notifyListeners();
   }
 
   resumeC1() {

@@ -1,33 +1,50 @@
 import 'package:better_player/better_player.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_poc/controller/controller_provider.dart';
 
 class FullScreenView extends StatelessWidget {
-  const FullScreenView({super.key});
+  final double index;
+  const FullScreenView({super.key, required this.index});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Consumer<ControllerProvider>(builder: (context, provider, _) {
-        return PopScope(
-          onPopInvokedWithResult: (didPop, result) {
-            provider.resumeC1();
+      body: SafeArea(
+        child: Consumer<ControllerProvider>(
+          builder: (context, provider, _) {
+            return PopScope(
+              onPopInvokedWithResult: (didPop, result) {
+                provider.resumeC1();
+              },
+              child: PageView.builder(
+                controller: provider.pageController,
+                itemCount: provider.stories.length,
+                onPageChanged: (index) {
+                  provider.onPageChange(index, provider.stories[index].url);
+                },
+                itemBuilder: (context, index) {
+                  return index != provider.currentReelIndex
+                      ? CachedNetworkImage(
+                          fit: BoxFit.cover,
+                          imageUrl: provider.stories[index].thumbnail,
+                          placeholder: (context, url) => const SizedBox(),
+                          errorWidget: (context, url, error) =>
+                              const Icon(Icons.error),
+                        )
+                      : provider.c2.isVideoInitialized()!
+                          ? AspectRatio(
+                              aspectRatio: 16 / 9,
+                              child: BetterPlayer(controller: provider.c2))
+                          : Container();
+                },
+              ),
+            );
           },
-          child: PageView.builder(
-            // physics: const NeverScrollableScrollPhysics(),
-            itemCount: provider.stories.length,
-            onPageChanged: (value) {
-              provider.disposeCurrentControllerAndCreateNew(
-                  provider.stories[provider.currentIndexPlaying + 1].url);
-            },
-            itemBuilder: (context, index) {
-              return VideoPlayer();
-            },
-          ),
-        );
-      }),
+        ),
+      ),
     );
   }
 }

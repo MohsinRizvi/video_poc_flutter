@@ -28,14 +28,11 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
-        home:  HLSVideoPlayer(videoUrl: 'https://flipfit-cdn.akamaized.net/flip_hls/661f570aab9d840019942b80-473e0b/video_h1.m3u8',),
+        home: const VideoListView(),
       ),
     );
   }
 }
-
-
-
 
 class HLSVideoPlayer extends StatefulWidget {
   final String videoUrl;
