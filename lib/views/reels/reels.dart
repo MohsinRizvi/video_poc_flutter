@@ -225,9 +225,9 @@ class _VideoListViewState extends State<VideoListView> {
                 backgroundColor: Colors.black,
                 appBar: AppBar(
                   backgroundColor: Colors.black,
-                  centerTitle: false,
+                  centerTitle: true,
                   title: const Text(
-                    "Video List",
+                    "Reels POC",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 30,

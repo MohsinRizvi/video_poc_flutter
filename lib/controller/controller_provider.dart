@@ -18,7 +18,9 @@ class ControllerProvider extends ChangeNotifier {
 
   void fetchStories() async {
     stories = await storyService.fetchStories();
-
+    // if (Platform.isAndroid) {
+    //   stories.retainWhere((story) => story.videoFormat == 'webm');
+    // }
     if (Platform.isIOS) {
       stories.removeWhere((story) =>
           story.videoFormat == 'webm' ||
@@ -33,11 +35,15 @@ class ControllerProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setupController() {
+  void setupController() async {
     debugPrint('PLAYING $currentIndexPlaying VIDEO');
 
     c1 = createController(stories[currentIndexPlaying].url);
     c1.setVolume(0);
+    if (currentIndexPlaying >= stories.length) {
+      await c1.preCache(initDataSource(stories[currentIndexPlaying + 1].url));
+    }
+
     c1.addEventsListener((event) async {
       final position = c1.videoPlayerController!.value.position;
       if (position != null && position.inSeconds >= 3) {
@@ -168,6 +174,25 @@ class ControllerProvider extends ChangeNotifier {
   resumeC1() {
     c2.dispose(forceDispose: true);
     c1.play();
+  }
+
+  BetterPlayerDataSource initDataSource(String url) {
+    return BetterPlayerDataSource(
+      BetterPlayerDataSourceType.network,
+      url,
+      bufferingConfiguration: const BetterPlayerBufferingConfiguration(
+        minBufferMs: 3000,
+        maxBufferMs: 10000,
+        bufferForPlaybackMs: 1000,
+        bufferForPlaybackAfterRebufferMs: 2000,
+      ),
+      cacheConfiguration: const BetterPlayerCacheConfiguration(
+        useCache: true,
+        preCacheSize: 3 * 1024 * 1024,
+        maxCacheSize: 100 * 1024 * 1024,
+        maxCacheFileSize: 10 * 1024 * 1024,
+      ),
+    );
   }
 }
 
