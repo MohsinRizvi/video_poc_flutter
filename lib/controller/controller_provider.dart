@@ -40,9 +40,9 @@ class ControllerProvider extends ChangeNotifier {
 
     c1 = createController(stories[currentIndexPlaying].url);
     c1.setVolume(0);
-    if (currentIndexPlaying >= stories.length) {
-      await c1.preCache(initDataSource(stories[currentIndexPlaying + 1].url));
-    }
+    // if (currentIndexPlaying >= stories.length) {
+    //   await c1.preCache(initDataSource(stories[currentIndexPlaying + 1].url));
+    // }
 
     c1.addEventsListener((event) async {
       final position = c1.videoPlayerController!.value.position;
