@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 
 class StoryService {
   // The base URL of the API
-  final String _baseUrl = 'http://54.73.71.137:4000/api/admin/v1/video-streaming'; // Replace with your actual API endpoint
+  final String _baseUrl = 'https://reels-poc-api-e8ccf946e84c.herokuapp.com/api/v1/video-streaming?platform=android'; // Replace with your actual API endpoint
 
   // Fetch stories from the API
   Future<List<Story>> fetchStories() async {
@@ -33,20 +33,3 @@ class StoryService {
   }
 }
 
-class VideoService {
-  final Dio _dio = Dio();
-
-  Future<Story> fetchVideos() async {
-    try {
-      final response = await _dio.get('http://54.73.71.137:4000/api/admin/v1/video-streaming');
-      if (response.statusCode == 200) {
-        // Parse the response using the generated JSON serialization code
-        return Story.fromJson(response.data);
-      } else {
-        throw Exception('Failed to load videos');
-      }
-    } catch (e) {
-      throw Exception('Failed to fetch videos: $e');
-    }
-  }
-}
