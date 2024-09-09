@@ -21,8 +21,11 @@ class ControllerProvider extends ChangeNotifier {
 
     if (Platform.isIOS) {
       stories.removeWhere((story) =>
-          story.videoFormat == 'webm' || story.videoFormat == 'webm-vp9');
+          story.videoFormat == 'webm' ||
+          story.videoFormat == 'webm-vp9' ||
+          story.videoFormat == 'mp4');
     }
+    // stories = [stories[3], stories[3], stories[3], stories[3]];
     await Future.delayed(const Duration(seconds: 2));
     loading = false;
 
@@ -36,7 +39,7 @@ class ControllerProvider extends ChangeNotifier {
     c1 = createController(stories[currentIndexPlaying].url);
     c1.setVolume(0);
     c1.addEventsListener((event) async {
-      final position = await c1.videoPlayerController!.position;
+      final position = c1.videoPlayerController!.value.position;
       if (position != null && position.inSeconds >= 3) {
         c1.pause();
         stories[currentIndexPlaying].isPlayed = true;
@@ -47,7 +50,7 @@ class ControllerProvider extends ChangeNotifier {
         if (currentIndexPlaying >= stories.length) {
           currentIndexPlaying = 0;
         }
-
+        c1.removeEventsListener((event) {});
         c1.dispose(forceDispose: true);
         setupController();
       }
