@@ -212,7 +212,8 @@ class _VideoListViewState extends State<VideoListView> {
   @override
   void initState() {
     super.initState();
-    Provider.of<ControllerProvider>(context, listen: false).fetchStories();
+    Provider.of<ControllerProvider>(context, listen: false)
+        .fetchStories(context);
   }
 
   @override

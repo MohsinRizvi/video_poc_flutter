@@ -38,7 +38,13 @@ class FullScreenView extends StatelessWidget {
                           ? AspectRatio(
                               aspectRatio: 16 / 9,
                               child: BetterPlayer(controller: provider.c2))
-                          : Container();
+                          : CachedNetworkImage(
+                              fit: BoxFit.cover,
+                              imageUrl: provider.stories[index].thumbnail,
+                              placeholder: (context, url) => const SizedBox(),
+                              errorWidget: (context, url, error) =>
+                                  const Icon(Icons.error),
+                            );
                 },
               ),
             );
