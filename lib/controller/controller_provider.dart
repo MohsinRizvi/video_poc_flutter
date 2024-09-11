@@ -16,57 +16,50 @@ class ControllerProvider extends ChangeNotifier {
   final StoryService storyService = StoryService();
   List<Story> stories = [];
   BuildContext? context;
+  bool showSnackBar = true;
+
+  void toggleSnacbar(bool value) {
+    showSnackBar = value;
+    notifyListeners();
+  }
 
   void fetchStories(BuildContext buildContext) async {
     context = buildContext;
     stories = await storyService.fetchStories();
-    // if (Platform.isAndroid) {
-    //   stories.retainWhere((story) => story.videoFormat == 'mp4');
-    // }
-    if (Platform.isIOS) {
-      stories.removeWhere(
-        (story) =>
-            story.videoFormat == 'webm' ||
-            story.videoFormat == 'webm-vp9' ||
-            story.videoFormat == 'mp4',
-      );
+    if (Platform.isAndroid) {
+      stories.retainWhere((story) => story.videoFormat == 'mov');
     }
-    // stories = [stories[3], stories[3], stories[3], stories[3]];
-    await Future.delayed(const Duration(seconds: 2));
-
-    loading = false;
+    if (Platform.isIOS) {
+      stories.retainWhere((story) => story.videoFormat == 'mov');
+    }
 
     setupController();
+    loading = false;
     notifyListeners();
   }
 
   void setupController() async {
-    debugPrint('PLAYING $currentIndexPlaying VIDEO');
-    final startTime = DateTime.now(); // Record the start time
+    final startTime = DateTime.now();
     c1 = createController(stories[currentIndexPlaying].url);
 
-    c1.setVolume(0);
+    c1.addEventsListener((event) {
+      if (showSnackBar) {
+        if (event.betterPlayerEventType == BetterPlayerEventType.initialized) {
+          final loadTime = DateTime.now().difference(startTime).inMilliseconds;
 
-    c1.addEventsListener((event) async {
-      if (event.betterPlayerEventType == BetterPlayerEventType.initialized) {
-        final endTime =
-            DateTime.now(); // Record the time when the video is ready
-        final loadTime = endTime
-            .difference(startTime)
-            .inMilliseconds; // Calculate load time in milliseconds
-        debugPrint(
-            'Video $currentIndexPlaying is ready. Load time: $loadTime ms'); // Show SnackBar with load time
-        ScaffoldMessenger.of(context!).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Video $currentIndexPlaying is ready. Load time: $loadTime ms - Format: ${stories[currentIndexPlaying].videoFormat}'),
-            duration: const Duration(
-                seconds: 2), // How long the SnackBar should be visible
-          ),
-        );
+          ScaffoldMessenger.of(context!).showSnackBar(
+            SnackBar(
+              content: Text(
+                  'Video $currentIndexPlaying is ready. Load time: $loadTime ms\nFormat: ${stories[currentIndexPlaying].videoFormat}\nSize: ${stories[currentIndexPlaying].size}\nDuration: ${stories[currentIndexPlaying].duration}'),
+              duration: const Duration(
+                seconds: 2,
+              ),
+            ),
+          );
+        }
       }
       final position = c1.videoPlayerController!.value.position;
-      if (position != null && position.inSeconds >= 3) {
+      if (position.inSeconds >= 3) {
         c1.pause();
         stories[currentIndexPlaying].isPlayed = true;
         currentIndexPlaying++;

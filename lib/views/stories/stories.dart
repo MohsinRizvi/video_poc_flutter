@@ -1,4 +1,3 @@
-
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:http/http.dart' as http;
@@ -7,6 +6,7 @@ import 'package:video_player/video_player.dart';
 import '../../animation/animated_bar.dart';
 import '../../models/story_model.dart';
 import '../../service/network.dart';
+
 class StoryScreen extends StatefulWidget {
   @override
   _StoryScreenState createState() => _StoryScreenState();
@@ -48,9 +48,10 @@ class _StoryScreenState extends State<StoryScreen>
     });
   }
 
-
   bool _isSupportedVideoFormat(String format) {
-    return format == 'mp4' || format == 'mov'|| format == '3pg'; // Add other supported formats if needed
+    return format == 'mp4' ||
+        format == 'mov' ||
+        format == '3pg'; // Add other supported formats if needed
   }
 
   @override
@@ -104,13 +105,16 @@ class _StoryScreenState extends State<StoryScreen>
                     return CachedNetworkImage(
                       imageUrl: story.thumbnail,
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => const CircularProgressIndicator(),
-                      errorWidget: (context, url, error) => const Icon(Icons.error),
+                      placeholder: (context, url) =>
+                          const CircularProgressIndicator(),
+                      errorWidget: (context, url, error) =>
+                          const Icon(Icons.error),
                     );
 
                   case MediaType.video:
-                  // Check if video controller is initialized
-                    if (_videoController != null && _videoController!.value.isInitialized) {
+                    // Check if video controller is initialized
+                    if (_videoController != null &&
+                        _videoController!.value.isInitialized) {
                       return FittedBox(
                         fit: BoxFit.cover,
                         child: SizedBox(
@@ -130,12 +134,11 @@ class _StoryScreenState extends State<StoryScreen>
                             imageBuilder: (context, imageProvider) => Container(
                               decoration: BoxDecoration(
                                 image: DecorationImage(
-                                    image: imageProvider,
-                                    fit: BoxFit.cover
-                                ),
+                                    image: imageProvider, fit: BoxFit.cover),
                               ),
                               child: BackdropFilter(
-                                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                filter:
+                                    ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                                 child: Container(
                                   color: Colors.black.withOpacity(0.3),
                                 ),
@@ -144,7 +147,8 @@ class _StoryScreenState extends State<StoryScreen>
                             placeholder: (context, url) => Container(
                               color: Colors.black,
                             ),
-                            errorWidget: (context, url, error) => Icon(Icons.error),
+                            errorWidget: (context, url, error) =>
+                                Icon(Icons.error),
                           ),
                           // Loader at the center
                           const Center(
@@ -156,7 +160,6 @@ class _StoryScreenState extends State<StoryScreen>
                       );
                     }
                 }
-                return const SizedBox.shrink();
               },
             ),
             Positioned(
@@ -169,15 +172,15 @@ class _StoryScreenState extends State<StoryScreen>
                     children: _stories
                         .asMap()
                         .map((i, e) {
-                      return MapEntry(
-                        i,
-                        AnimatedBar(
-                          animController: _animController,
-                          position: i,
-                          currentIndex: _currentIndex,
-                        ),
-                      );
-                    })
+                          return MapEntry(
+                            i,
+                            AnimatedBar(
+                              animController: _animController,
+                              position: i,
+                              currentIndex: _currentIndex,
+                            ),
+                          );
+                        })
                         .values
                         .toList(),
                   ),
@@ -271,6 +274,7 @@ class _StoryScreenState extends State<StoryScreen>
       print('Video pre-cache error: $error');
     });
   }
+
 // Method to get video size
   Future<VideoSize> _getVideoSize(String url) async {
     try {
@@ -292,14 +296,15 @@ class _StoryScreenState extends State<StoryScreen>
     DateTime loadStartTime = DateTime.now();
     switch (story.media) {
       case MediaType.image:
-        _animController.duration = const Duration(seconds: 3); // Display image for 3 seconds
+        _animController.duration =
+            const Duration(seconds: 3); // Display image for 3 seconds
         _animController.forward();
         break;
 
       case MediaType.video:
         _videoController?.dispose();
         _videoController = VideoPlayerController.network(story.url)
-          ..initialize().then((_) async{
+          ..initialize().then((_) async {
             setState(() {}); // Rebuild to show the video
             if (_videoController!.value.isInitialized) {
               Duration loadTime = DateTime.now().difference(loadStartTime);
@@ -310,7 +315,8 @@ class _StoryScreenState extends State<StoryScreen>
                 try {
                   final response = await http.head(Uri.parse(url));
                   final contentLength = response.headers['content-length'];
-                  final sizeInBytes = contentLength != null ? int.parse(contentLength) : 0;
+                  final sizeInBytes =
+                      contentLength != null ? int.parse(contentLength) : 0;
                   final sizeInMB = sizeInBytes / (1024 * 1024);
 
                   return VideoSize(sizeInBytes, sizeInMB);
@@ -319,6 +325,7 @@ class _StoryScreenState extends State<StoryScreen>
                   return VideoSize(0, 0);
                 }
               }
+
               final videoSize = await _getVideoSize(story.url);
 
               ScaffoldMessenger.of(context).showSnackBar(
@@ -330,8 +337,8 @@ class _StoryScreenState extends State<StoryScreen>
                 ),
               );
 
-
-              _animController.duration = _videoController!.value.duration + const Duration(seconds: 3); // Add 3 seconds buffer
+              _animController.duration = _videoController!.value.duration +
+                  const Duration(seconds: 3); // Add 3 seconds buffer
               _videoController!.play();
               _animController.forward();
             }
@@ -356,8 +363,8 @@ class _StoryScreenState extends State<StoryScreen>
       );
     }
   }
-
 }
+
 class VideoSize {
   final int bytes;
   final double megabytes;
